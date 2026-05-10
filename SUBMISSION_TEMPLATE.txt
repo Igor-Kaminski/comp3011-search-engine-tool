@@ -1,0 +1,13 @@
+COMP3011 Coursework 2 Submission
+
+Video demonstration link:
+[PASTE VIDEO LINK HERE]
+
+GitHub repository URL:
+[PASTE GITHUB REPOSITORY URL HERE]
+
+Index file:
+The compiled index file is included in this repository at data/index.json.
+
+GenAI declaration:
+This work was developed with help from OpenAI Codex. Codex was used to interpret the coursework brief, scaffold the Python project, implement the crawler/indexer/search/CLI, write tests, draft documentation, and prepare a video outline. I reviewed and tested the code and can explain the implementation and design decisions.
