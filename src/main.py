@@ -46,17 +46,27 @@ class SearchShell:
         return f"Unknown command '{command}'. Type 'help' for available commands."
 
     def _build(self) -> str:
-        crawler = QuoteCrawler(base_url=self.base_url, delay_seconds=self.delay_seconds)
+        crawler = QuoteCrawler(
+            base_url=self.base_url,
+            delay_seconds=self.delay_seconds,
+            continue_on_error=True,
+        )
         pages = crawler.crawl()
+        if not pages:
+            return "Build failed: no pages were crawled. Check the website URL or network connection."
+
         index_data = build_inverted_index(pages, self.base_url)
         self.engine.set_index(index_data)
         self.engine.save(self.index_path)
         metadata = index_data["metadata"]
-        return (
+        output = (
             f"Built index for {metadata['page_count']} pages, "
             f"{metadata['unique_terms']} unique terms, "
             f"{metadata['total_terms']} total terms. Saved to {self.index_path}."
         )
+        if crawler.errors:
+            output += f" Skipped {len(crawler.errors)} page(s) after request errors."
+        return output
 
     def _load(self) -> str:
         try:

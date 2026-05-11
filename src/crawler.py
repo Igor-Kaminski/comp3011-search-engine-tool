@@ -24,6 +24,14 @@ class CrawledPage:
     text: str
 
 
+@dataclass(frozen=True)
+class CrawlError:
+    """A request that failed during crawling."""
+
+    url: str
+    message: str
+
+
 class QuoteCrawler:
     """Crawl quote listing pages while respecting a politeness delay."""
 
@@ -34,12 +42,15 @@ class QuoteCrawler:
         timeout_seconds: float = 15.0,
         session: requests.Session | None = None,
         sleep_func: Callable[[float], None] = time.sleep,
+        continue_on_error: bool = False,
     ) -> None:
         self.base_url = self._normalise_url(base_url)
         self.delay_seconds = delay_seconds
         self.timeout_seconds = timeout_seconds
         self.session = session or requests.Session()
         self.sleep_func = sleep_func
+        self.continue_on_error = continue_on_error
+        self.errors: list[CrawlError] = []
         self._request_count = 0
         self._base_domain = urlparse(self.base_url).netloc
 
@@ -54,7 +65,15 @@ class QuoteCrawler:
             if max_pages is not None and len(pages) >= max_pages:
                 break
 
-            html = self._fetch(next_url)
+            try:
+                html = self._fetch(next_url)
+            except requests.RequestException as error:
+                self.errors.append(CrawlError(next_url, str(error)))
+                if not self.continue_on_error:
+                    raise
+                seen.add(next_url)
+                break
+
             soup = BeautifulSoup(html, "html.parser")
             page = CrawledPage(
                 url=next_url,
@@ -72,17 +91,30 @@ class QuoteCrawler:
         if self._request_count > 0:
             self.sleep_func(self.delay_seconds)
 
-        response = self.session.get(
-            url,
-            headers={"User-Agent": "COMP3011-coursework-search-tool/1.0"},
-            timeout=self.timeout_seconds,
-        )
-        self._request_count += 1
+        try:
+            response = self.session.get(
+                url,
+                headers={"User-Agent": "COMP3011-coursework-search-tool/1.0"},
+                timeout=self.timeout_seconds,
+            )
+        finally:
+            self._request_count += 1
         response.raise_for_status()
         return response.text
 
     def _find_next_page_url(self, soup: BeautifulSoup, current_url: str) -> str | None:
-        next_link = soup.select_one("li.next a[href]") or soup.select_one('a[rel="next"][href]')
+        selectors = (
+            "li.next a[href]",
+            'a[rel="next"][href]',
+            'a[aria-label="Next"][href]',
+            "a.next[href]",
+        )
+        next_link = None
+        for selector in selectors:
+            next_link = soup.select_one(selector)
+            if next_link is not None:
+                break
+
         if next_link is None:
             return None
 

@@ -82,9 +82,12 @@ def test_shell_reports_missing_saved_index(tmp_path) -> None:
 
 def test_shell_build_crawls_indexes_and_saves(tmp_path, monkeypatch) -> None:
     class FakeCrawler:
-        def __init__(self, base_url: str, delay_seconds: float) -> None:
+        errors = []
+
+        def __init__(self, base_url: str, delay_seconds: float, continue_on_error: bool) -> None:
             assert base_url == "https://example.test/"
             assert delay_seconds == 0
+            assert continue_on_error is True
 
         def crawl(self) -> list[Page]:
             return [Page("https://example.test/", "Example", "Alpha beta alpha")]

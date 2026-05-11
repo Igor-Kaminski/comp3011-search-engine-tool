@@ -17,13 +17,16 @@ class FakeResponse:
 
 
 class FakeSession:
-    def __init__(self, pages: dict[str, FakeResponse]) -> None:
+    def __init__(self, pages: dict[str, FakeResponse | requests.RequestException]) -> None:
         self.pages = pages
         self.requested_urls: list[str] = []
 
     def get(self, url: str, headers: dict[str, str], timeout: float) -> FakeResponse:
         self.requested_urls.append(url)
-        return self.pages[url]
+        response = self.pages[url]
+        if isinstance(response, requests.RequestException):
+            raise response
+        return response
 
 
 def test_crawler_follows_next_links_and_respects_politeness_delay() -> None:
@@ -91,3 +94,34 @@ def test_crawler_raises_for_http_errors() -> None:
 
     with pytest.raises(requests.HTTPError):
         crawler.crawl()
+
+
+def test_crawler_can_continue_gracefully_after_request_error() -> None:
+    base_url = "https://quotes.toscrape.com/"
+    crawler = QuoteCrawler(
+        base_url=base_url,
+        session=FakeSession({base_url: requests.Timeout("request timed out")}),
+        sleep_func=lambda seconds: None,
+        continue_on_error=True,
+    )
+
+    assert crawler.crawl() == []
+    assert len(crawler.errors) == 1
+    assert crawler.errors[0].url == base_url
+    assert "timed out" in crawler.errors[0].message
+
+
+def test_crawler_supports_alternate_next_link_markup() -> None:
+    base_url = "https://quotes.toscrape.com/"
+    second_url = "https://quotes.toscrape.com/page/2/"
+    session = FakeSession(
+        {
+            base_url: FakeResponse('<html><body><a rel="next" href="/page/2/">Older</a></body></html>'),
+            second_url: FakeResponse("<html><body>Second page</body></html>"),
+        }
+    )
+
+    crawler = QuoteCrawler(base_url=base_url, session=session, sleep_func=lambda seconds: None)
+    pages = crawler.crawl()
+
+    assert [page.url for page in pages] == [base_url, second_url]
