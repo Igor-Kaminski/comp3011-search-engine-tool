@@ -49,6 +49,14 @@ good -> https://quotes.toscrape.com/ -> frequency=1, positions=[...]
 
 Trade-off to mention: the crawler follows quote pagination rather than every author/tag link so the crawl is deterministic and focused on the quote pages used by the assignment examples.
 
+Algorithms to mention:
+
+- Posting-list intersection for multi-word search.
+- TF-IDF ranking for result ordering.
+- Position checks for exact phrase search.
+- Prefix and close-match lookup for suggestions.
+- Graceful crawler error handling with request timeouts and recorded errors.
+
 ## 3:30-4:00 Testing
 
 Run:
