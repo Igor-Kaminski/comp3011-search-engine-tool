@@ -29,6 +29,9 @@ def sample_index() -> dict:
             "indifference": {
                 "https://quotes.toscrape.com/page/2/": {"frequency": 1, "positions": [0]},
             },
+            "friendship": {
+                "https://quotes.toscrape.com/page/2/": {"frequency": 1, "positions": [2]},
+            },
         },
     }
 
@@ -61,6 +64,23 @@ def test_find_returns_empty_for_missing_or_empty_queries() -> None:
 
     assert engine.find("doesnotexist") == []
     assert engine.find("   ") == []
+
+
+def test_find_supports_exact_quoted_phrase_queries() -> None:
+    engine = SearchEngine(sample_index())
+
+    assert [result.url for result in engine.find('"good friends"')] == [
+        "https://quotes.toscrape.com/"
+    ]
+    assert engine.find('"friends good"') == []
+
+
+def test_suggest_returns_prefix_and_close_matches() -> None:
+    engine = SearchEngine(sample_index())
+
+    assert engine.suggest("friend") == ["friends", "friendship"]
+    assert engine.suggest("indiference") == ["indifference"]
+    assert engine.suggest("   ") == []
 
 
 def test_get_postings_uses_first_valid_word() -> None:

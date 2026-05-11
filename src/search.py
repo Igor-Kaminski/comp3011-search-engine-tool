@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import math
+from difflib import get_close_matches
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -52,7 +53,8 @@ class SearchEngine:
 
     def find(self, query: str) -> list[SearchResult]:
         self._require_index()
-        query_terms = list(dict.fromkeys(tokenize(query)))
+        phrase_terms = self._extract_quoted_phrase(query)
+        query_terms = phrase_terms or list(dict.fromkeys(tokenize(query)))
         if not query_terms:
             return []
 
@@ -65,6 +67,10 @@ class SearchEngine:
             posting_sets.append(set(postings))
 
         matching_urls = set.intersection(*posting_sets)
+        if phrase_terms:
+            matching_urls = {
+                url for url in matching_urls if self._contains_phrase(url, phrase_terms)
+            }
         results: list[SearchResult] = []
 
         for url in matching_urls:
@@ -83,6 +89,45 @@ class SearchEngine:
             )
 
         return sorted(results, key=lambda result: (-result.score, result.url))
+
+    def suggest(self, query: str, limit: int = 5) -> list[str]:
+        """Suggest indexed terms for a misspelling or short prefix."""
+
+        self._require_index()
+        tokens = tokenize(query)
+        if not tokens:
+            return []
+
+        term = tokens[0]
+        vocabulary = sorted(self.index_data["index"])
+        prefix_matches = [word for word in vocabulary if word.startswith(term) and word != term]
+        if prefix_matches:
+            return prefix_matches[:limit]
+        return get_close_matches(term, vocabulary, n=limit, cutoff=0.74)
+
+    @staticmethod
+    def _extract_quoted_phrase(query: str) -> list[str]:
+        first_quote = query.find('"')
+        last_quote = query.rfind('"')
+        if first_quote == -1 or last_quote <= first_quote:
+            return []
+        return tokenize(query[first_quote + 1 : last_quote])
+
+    def _contains_phrase(self, url: str, phrase_terms: list[str]) -> bool:
+        if len(phrase_terms) < 2:
+            return True
+
+        first_term_positions = self.index_data["index"][phrase_terms[0]][url]["positions"]
+        candidate_starts = set(first_term_positions)
+        for offset, term in enumerate(phrase_terms[1:], start=1):
+            positions = {
+                int(position) - offset
+                for position in self.index_data["index"][term][url]["positions"]
+            }
+            candidate_starts &= positions
+            if not candidate_starts:
+                return False
+        return True
 
     def _tf_idf_score(self, terms: list[str], url: str) -> float:
         """Score a page using term frequency and inverse document frequency."""

@@ -55,6 +55,9 @@ def test_shell_load_print_and_find(tmp_path) -> None:
                 "friends": {
                     "https://quotes.toscrape.com/": {"frequency": 1, "positions": [1]},
                 },
+                "friendship": {
+                    "https://quotes.toscrape.com/": {"frequency": 1, "positions": [2]},
+                },
             },
         }
     )
@@ -66,6 +69,8 @@ def test_shell_load_print_and_find(tmp_path) -> None:
     assert "frequency=2" in shell.execute("print good")
     assert "No entries found" in shell.execute("print missing")
     assert "Found 1 page(s)" in shell.execute("find good friends")
+    assert "Found 1 page(s)" in shell.execute('find "good friends"')
+    assert "Suggestions for 'friend'" in shell.execute("suggest friend")
     assert "No pages found" in shell.execute("find missing")
 
 
