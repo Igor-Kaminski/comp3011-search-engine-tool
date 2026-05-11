@@ -33,15 +33,27 @@ def sample_index() -> dict:
     }
 
 
-def test_find_returns_pages_containing_all_query_terms_ranked_by_score() -> None:
+def test_find_returns_pages_containing_all_query_terms_ranked_by_tfidf_score() -> None:
     engine = SearchEngine(sample_index())
 
     results = engine.find("good friends")
 
     assert len(results) == 1
     assert results[0].url == "https://quotes.toscrape.com/"
-    assert results[0].score == 3
+    assert results[0].score == 3.4055
     assert results[0].term_frequencies == {"good": 2, "friends": 1}
+
+
+def test_tfidf_ranking_rewards_rarer_terms() -> None:
+    engine = SearchEngine(sample_index())
+
+    results = engine.find("good")
+
+    assert [result.url for result in results] == [
+        "https://quotes.toscrape.com/",
+        "https://quotes.toscrape.com/page/2/",
+    ]
+    assert results[0].score > results[1].score
 
 
 def test_find_returns_empty_for_missing_or_empty_queries() -> None:

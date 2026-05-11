@@ -112,7 +112,7 @@ class SearchShell:
             frequencies = ", ".join(
                 f"{term}={frequency}" for term, frequency in result.term_frequencies.items()
             )
-            lines.append(f"- {result.url} | score={result.score} | {frequencies}")
+            lines.append(f"- {result.url} | tf-idf={result.score:.4f} | {frequencies}")
         return "\n".join(lines)
 
     @staticmethod

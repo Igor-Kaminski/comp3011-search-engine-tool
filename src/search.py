@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -17,7 +18,7 @@ DEFAULT_INDEX_PATH = Path("data/index.json")
 class SearchResult:
     url: str
     title: str
-    score: int
+    score: float
     term_frequencies: dict[str, int]
 
 
@@ -70,7 +71,7 @@ class SearchEngine:
             term_frequencies = {
                 term: int(inverted_index[term][url]["frequency"]) for term in query_terms
             }
-            score = sum(term_frequencies.values())
+            score = self._tf_idf_score(query_terms, url)
             page_info = self.index_data["pages"].get(url, {})
             results.append(
                 SearchResult(
@@ -82,6 +83,19 @@ class SearchEngine:
             )
 
         return sorted(results, key=lambda result: (-result.score, result.url))
+
+    def _tf_idf_score(self, terms: list[str], url: str) -> float:
+        """Score a page using term frequency and inverse document frequency."""
+
+        total_pages = max(1, int(self.index_data["metadata"].get("page_count", 0)))
+        score = 0.0
+        for term in terms:
+            postings = self.index_data["index"][term]
+            frequency = int(postings[url]["frequency"])
+            document_frequency = len(postings)
+            inverse_document_frequency = math.log((1 + total_pages) / (1 + document_frequency)) + 1
+            score += frequency * inverse_document_frequency
+        return round(score, 4)
 
     def _require_index(self) -> None:
         if self.index_data is None:
