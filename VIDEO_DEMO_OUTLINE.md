@@ -65,12 +65,19 @@ Run:
 python -m pytest --cov=src --cov-report=term-missing
 ```
 
+Optionally show the benchmark:
+
+```powershell
+python scripts/benchmark.py
+```
+
 Mention:
 
 - Crawler tests use fake HTTP pages and fake sleep calls.
 - Indexer tests check case-insensitive tokenisation, frequencies, and positions.
 - Search tests check TF-IDF ranking, phrase queries, suggestions, missing words, save/load, and unloaded-index errors.
 - Integration tests check the full index-save-load-search workflow.
+- Performance tests and `scripts/benchmark.py` provide lightweight evidence for indexing/search efficiency.
 - Current result: run the command above and quote the test/coverage result shown on your machine.
 - The GitHub Actions workflow runs the same pytest command automatically after pushing to GitHub.
 

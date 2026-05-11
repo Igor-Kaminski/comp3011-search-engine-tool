@@ -28,9 +28,14 @@ tests/
   test_indexer.py
   test_integration.py
   test_main.py
+  test_performance.py
   test_search.py
 data/
   index.json
+docs/
+  ALGORITHMS.md
+scripts/
+  benchmark.py
 .github/workflows/
   tests.yml
 requirements.txt
@@ -121,6 +126,14 @@ python -m pytest --cov=src --cov-report=term-missing
 
 The crawler tests use fake pages and a fake sleep function, so they do not contact the website or wait 6 seconds during testing.
 
+Run the synthetic benchmark:
+
+```powershell
+python scripts/benchmark.py
+```
+
+The benchmark builds an index over generated pages and times indexing plus search. It is intended as lightweight evidence for algorithmic performance, not as a replacement for unit tests.
+
 ## Design Notes
 
 The implementation is split into small modules so each responsibility is isolated and testable:
@@ -133,6 +146,8 @@ The implementation is split into small modules so each responsibility is isolate
 This separation keeps the crawler independent from the search algorithm. It also allows tests to mock network requests without touching the indexer or CLI.
 
 ## Data Structures and Algorithms
+
+More detail is available in `docs/ALGORITHMS.md`.
 
 The inverted index is stored as JSON in `data/index.json`. Each term maps to the pages where it appears, and each page entry stores:
 
