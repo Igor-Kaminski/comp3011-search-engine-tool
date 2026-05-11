@@ -69,6 +69,19 @@ Find pages containing all query words:
 > find good friends
 ```
 
+Find an exact phrase by wrapping it in double quotes:
+
+```text
+> find "good friends"
+```
+
+Ask for suggestions when you have a partial word or likely misspelling:
+
+```text
+> suggest friend
+> suggest indiference
+```
+
 Helpful edge cases to demonstrate:
 
 ```text
@@ -98,6 +111,9 @@ The crawler tests use fake pages and a fake sleep function, so they do not conta
 - `crawler.py` is responsible for HTTP requests, HTML parsing, pagination, and the 6-second politeness window.
 - `indexer.py` tokenises page text and builds the inverted index.
 - `search.py` saves, loads, prints postings, and searches for pages that contain all query terms.
+- Search results are ranked with TF-IDF, so terms that are rarer across pages can contribute more strongly to the score.
+- Quoted queries use stored word positions to check exact phrase matches.
+- The suggestion command uses prefix matching first, then close-match spelling suggestions.
 - `main.py` provides the interactive command-line shell required by the brief.
 
 The inverted index is stored as JSON in `data/index.json`. Each term maps to the pages where it appears, and each page entry stores:
@@ -108,3 +124,13 @@ The inverted index is stored as JSON in `data/index.json`. Each term maps to the
 ## GenAI Use Declaration
 
 This implementation was developed with help from OpenAI Codex. The AI was used to interpret the coursework brief, scaffold the project structure, implement the crawler/index/search modules, write tests, and draft documentation. You should declare this in the video demonstration and be ready to explain the design decisions and code in your own words.
+
+## Continuous Integration
+
+The repository includes a GitHub Actions workflow in `.github/workflows/tests.yml`. It installs the dependencies and runs:
+
+```powershell
+python -m pytest --cov=src --cov-report=term-missing
+```
+
+This gives automated test feedback whenever commits are pushed to GitHub.

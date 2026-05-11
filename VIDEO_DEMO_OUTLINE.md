@@ -18,6 +18,8 @@ Commands to demonstrate:
 > print nonsense
 > find indifference
 > find good friends
+> find "good friends"
+> suggest indiference
 > find
 > print qwertywordnotfound
 > find qwertywordnotfound
@@ -30,6 +32,7 @@ Mention that `build` crawls 10 quote listing pages and waits 6 seconds between s
 - `src/crawler.py`: follows the site's pagination, extracts visible text with Beautiful Soup, and enforces the politeness delay.
 - `src/indexer.py`: tokenises text case-insensitively and builds an inverted index.
 - `src/search.py`: stores and loads JSON, prints postings, and finds pages containing all query terms.
+- Advanced search: TF-IDF scoring ranks results, quoted queries use word positions for exact phrase search, and `suggest` offers prefix/spelling suggestions.
 - `src/main.py`: provides the interactive shell commands required by the brief.
 
 Data structure to explain:
@@ -58,8 +61,10 @@ Mention:
 
 - Crawler tests use fake HTTP pages and fake sleep calls.
 - Indexer tests check case-insensitive tokenisation, frequencies, and positions.
-- Search tests check multi-word queries, missing words, save/load, and unloaded-index errors.
-- Current result: 15 tests passing with 90% coverage.
+- Search tests check TF-IDF ranking, phrase queries, suggestions, missing words, save/load, and unloaded-index errors.
+- Integration tests check the full index-save-load-search workflow.
+- Current result: run the command above and quote the test/coverage result shown on your machine.
+- The GitHub Actions workflow runs the same pytest command automatically after pushing to GitHub.
 
 ## 4:00-4:30 Version Control
 
