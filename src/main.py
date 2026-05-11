@@ -39,6 +39,8 @@ class SearchShell:
             return self._find(argument)
         if command == "suggest":
             return self._suggest(argument)
+        if command == "stats":
+            return self._stats()
         if command == "help":
             return self._help()
         if command in {"exit", "quit"}:
@@ -73,6 +75,8 @@ class SearchShell:
             self.engine.load(self.index_path)
         except FileNotFoundError:
             return f"No saved index found at {self.index_path}. Run 'build' first."
+        except ValueError as error:
+            return str(error)
 
         metadata = self.engine.index_data["metadata"]
         return (
@@ -148,6 +152,24 @@ class SearchShell:
             return f"No suggestions found for '{argument.strip()}'."
         return f"Suggestions for '{argument.strip()}': {', '.join(suggestions)}"
 
+    def _stats(self) -> str:
+        try:
+            stats = self.engine.stats()
+        except RuntimeError as error:
+            return str(error)
+
+        lines = [
+            f"Source: {stats['source_url']}",
+            f"Pages: {stats['page_count']}",
+            f"Total terms: {stats['total_terms']}",
+            f"Unique terms: {stats['unique_terms']}",
+            f"Largest page: {stats['largest_page_terms']} terms",
+            "Most common terms:",
+        ]
+        for term, frequency in stats["most_common_terms"]:
+            lines.append(f"- {term}: {frequency}")
+        return "\n".join(lines)
+
     @staticmethod
     def _split_command(line: str) -> tuple[str, str]:
         stripped = line.strip()
@@ -167,6 +189,7 @@ class SearchShell:
                 "  find <query>       Find pages containing all query words.",
                 '  find "<phrase>"    Find pages containing an exact phrase.',
                 "  suggest <word>     Suggest indexed terms for a prefix or misspelling.",
+                "  stats              Show index summary and common terms.",
                 "  exit               Close the shell.",
             ]
         )

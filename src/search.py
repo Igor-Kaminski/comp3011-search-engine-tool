@@ -43,7 +43,70 @@ class SearchEngine:
         path.write_text(json.dumps(self.index_data, indent=2, sort_keys=True), encoding="utf-8")
 
     def load(self, path: Path = DEFAULT_INDEX_PATH) -> None:
-        self.index_data = json.loads(path.read_text(encoding="utf-8"))
+        index_data = json.loads(path.read_text(encoding="utf-8"))
+        errors = self.validate(index_data)
+        if errors:
+            raise ValueError(f"Invalid index file: {errors[0]}")
+        self.index_data = index_data
+
+    def stats(self) -> dict[str, Any]:
+        self._require_index()
+        metadata = self.index_data["metadata"]
+        pages = self.index_data["pages"]
+        index = self.index_data["index"]
+        most_common_terms = sorted(
+            (
+                (term, sum(int(entry["frequency"]) for entry in postings.values()))
+                for term, postings in index.items()
+            ),
+            key=lambda item: (-item[1], item[0]),
+        )[:10]
+        return {
+            "source_url": metadata.get("source_url", ""),
+            "page_count": int(metadata.get("page_count", len(pages))),
+            "total_terms": int(metadata.get("total_terms", 0)),
+            "unique_terms": int(metadata.get("unique_terms", len(index))),
+            "largest_page_terms": max(
+                (int(page.get("term_count", 0)) for page in pages.values()),
+                default=0,
+            ),
+            "most_common_terms": most_common_terms,
+        }
+
+    @staticmethod
+    def validate(index_data: dict[str, Any]) -> list[str]:
+        errors: list[str] = []
+        for key in ("metadata", "pages", "index"):
+            if key not in index_data:
+                errors.append(f"missing top-level key '{key}'")
+        if errors:
+            return errors
+
+        pages = index_data["pages"]
+        index = index_data["index"]
+        if not isinstance(pages, dict) or not isinstance(index, dict):
+            return ["pages and index must be dictionaries"]
+
+        for term, postings in index.items():
+            if term != term.lower():
+                errors.append(f"term is not lower-case: {term}")
+            if not isinstance(postings, dict):
+                errors.append(f"postings for '{term}' must be a dictionary")
+                continue
+            for url, entry in postings.items():
+                if url not in pages:
+                    errors.append(f"posting for '{term}' references unknown page: {url}")
+                    continue
+                positions = entry.get("positions")
+                frequency = entry.get("frequency")
+                if not isinstance(positions, list):
+                    errors.append(f"positions for '{term}' on '{url}' must be a list")
+                    continue
+                if frequency != len(positions):
+                    errors.append(f"frequency mismatch for '{term}' on '{url}'")
+                if positions != sorted(positions):
+                    errors.append(f"positions are not sorted for '{term}' on '{url}'")
+        return errors
 
     def get_postings(self, word: str) -> dict[str, dict[str, Any]]:
         self._require_index()

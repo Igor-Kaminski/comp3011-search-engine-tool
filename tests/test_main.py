@@ -71,6 +71,7 @@ def test_shell_load_print_and_find(tmp_path) -> None:
     assert "Found 1 page(s)" in shell.execute("find good friends")
     assert "Found 1 page(s)" in shell.execute('find "good friends"')
     assert "Suggestions for 'friend'" in shell.execute("suggest friend")
+    assert "Most common terms:" in shell.execute("stats")
     assert "No pages found" in shell.execute("find missing")
 
 

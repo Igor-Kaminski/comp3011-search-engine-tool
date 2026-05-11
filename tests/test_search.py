@@ -114,6 +114,26 @@ def test_save_and_load_round_trip(tmp_path) -> None:
     assert loaded.index_data == sample_index()
 
 
+def test_stats_summarises_loaded_index() -> None:
+    engine = SearchEngine(sample_index())
+
+    stats = engine.stats()
+
+    assert stats["page_count"] == 2
+    assert stats["unique_terms"] == 5
+    assert stats["largest_page_terms"] == 5
+    assert stats["most_common_terms"][0] == ("good", 3)
+
+
+def test_validate_reports_structural_errors() -> None:
+    bad_index = sample_index()
+    bad_index["index"]["good"]["https://quotes.toscrape.com/"]["frequency"] = 99
+
+    errors = SearchEngine.validate(bad_index)
+
+    assert errors == ["frequency mismatch for 'good' on 'https://quotes.toscrape.com/'"]
+
+
 def test_search_requires_loaded_index() -> None:
     engine = SearchEngine()
 
