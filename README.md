@@ -11,7 +11,9 @@ The crawler follows the site's quote pagination from the home page to the final 
 - Saves and loads the index as JSON.
 - Supports single-word, multi-word, and quoted phrase queries.
 - Ranks results with TF-IDF scoring.
+- Shows short snippets for search results using stored word positions.
 - Suggests indexed terms for prefixes and likely misspellings.
+- Validates the saved index structure when loading from disk.
 - Includes unit and integration tests with coverage reporting.
 - Runs tests automatically through GitHub Actions.
 
@@ -102,6 +104,12 @@ Ask for suggestions when you have a partial word or likely misspelling:
 > suggest indiference
 ```
 
+Show index summary statistics:
+
+```text
+> stats
+```
+
 Helpful edge cases to demonstrate:
 
 ```text
@@ -140,8 +148,8 @@ The implementation is split into small modules so each responsibility is isolate
 
 - `crawler.py`: HTTP requests, HTML parsing, pagination, request delay, and request error handling.
 - `indexer.py`: tokenisation and inverted index construction.
-- `search.py`: JSON persistence, posting-list lookup, TF-IDF ranking, phrase search, and suggestions.
-- `main.py`: command-line shell and user-facing command output.
+- `search.py`: JSON persistence, index validation, posting-list lookup, TF-IDF ranking, phrase search, snippets, and suggestions.
+- `main.py`: command-line shell, user-facing command output, and index statistics.
 
 This separation keeps the crawler independent from the search algorithm. It also allows tests to mock network requests without touching the indexer or CLI.
 
@@ -173,6 +181,7 @@ The main algorithms are:
 - **Boolean AND search**: multi-word search intersects the posting lists for each query term, returning only pages that contain all query words.
 - **TF-IDF ranking**: matching pages are scored by combining term frequency with inverse document frequency, so rarer terms have more influence.
 - **Phrase search**: quoted queries use the stored word positions to check whether terms occur next to each other in order.
+- **Snippets**: search results reuse the indexed token stream to display short context around a matching word.
 - **Suggestions**: prefix matching is tried first, followed by close-match spelling suggestions using Python's standard library.
 
 These structures are efficient for the coursework-sized site because dictionary lookups are fast and posting-list intersections avoid scanning every page during search.
@@ -196,7 +205,7 @@ The crawler intentionally follows the quote listing pagination instead of crawli
 
 JSON was chosen for the saved index because it is human-readable, easy to inspect during the video demonstration, and sufficient for this dataset size. A larger search engine would usually use a database or a compressed index format.
 
-TF-IDF was added as an advanced feature because it improves ranking quality while still being explainable from the existing index statistics. Phrase search reuses the stored positions, which demonstrates why the index records more than simple word presence.
+TF-IDF was added as an advanced feature because it improves ranking quality while still being explainable from the existing index statistics. Phrase search and snippets reuse the stored positions, which demonstrates why the index records more than simple word presence.
 
 ## GenAI Use Declaration
 

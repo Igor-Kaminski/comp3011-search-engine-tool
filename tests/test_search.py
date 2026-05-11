@@ -134,6 +134,36 @@ def test_validate_reports_structural_errors() -> None:
     assert errors == ["frequency mismatch for 'good' on 'https://quotes.toscrape.com/'"]
 
 
+def test_load_rejects_invalid_index_file(tmp_path) -> None:
+    path = tmp_path / "bad-index.json"
+    path.write_text('{"metadata": {}, "pages": {}, "index": {"Bad": {}}}', encoding="utf-8")
+    engine = SearchEngine()
+
+    with pytest.raises(ValueError, match="Invalid index file"):
+        engine.load(path)
+
+
+def test_validate_reports_missing_keys_and_bad_shapes() -> None:
+    assert SearchEngine.validate({}) == [
+        "missing top-level key 'metadata'",
+        "missing top-level key 'pages'",
+        "missing top-level key 'index'",
+    ]
+    assert SearchEngine.validate({"metadata": {}, "pages": [], "index": []}) == [
+        "pages and index must be dictionaries"
+    ]
+
+
+def test_snippet_handles_missing_page_tokens() -> None:
+    index_data = sample_index()
+    index_data["pages"]["https://quotes.toscrape.com/"].pop("tokens")
+    engine = SearchEngine(index_data)
+
+    results = engine.find("good friends")
+
+    assert results[0].snippet == ""
+
+
 def test_search_requires_loaded_index() -> None:
     engine = SearchEngine()
 

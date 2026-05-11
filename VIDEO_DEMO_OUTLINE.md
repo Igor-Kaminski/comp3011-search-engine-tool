@@ -20,6 +20,7 @@ Commands to demonstrate:
 > find good friends
 > find "good friends"
 > suggest indiference
+> stats
 > find
 > print qwertywordnotfound
 > find qwertywordnotfound
@@ -33,6 +34,7 @@ Mention that `build` crawls 10 quote listing pages and waits 6 seconds between s
 - `src/indexer.py`: tokenises text case-insensitively and builds an inverted index.
 - `src/search.py`: stores and loads JSON, prints postings, and finds pages containing all query terms.
 - Advanced search: TF-IDF scoring ranks results, quoted queries use word positions for exact phrase search, and `suggest` offers prefix/spelling suggestions.
+- Result snippets and the `stats` command help demonstrate the index contents in a user-friendly way.
 - `src/main.py`: provides the interactive shell commands required by the brief.
 
 Data structure to explain:

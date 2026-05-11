@@ -30,8 +30,11 @@ def test_shell_reports_missing_index_before_print_or_find() -> None:
 
     assert "No index is loaded" in shell.execute("print good")
     assert "No index is loaded" in shell.execute("find good")
+    assert "No index is loaded" in shell.execute("stats")
+    assert "No index is loaded" in shell.execute("suggest good")
     assert "Usage: print <word>" == shell.execute("print")
     assert "Usage: find <word> [more words]" == shell.execute("find")
+    assert "Usage: suggest <word>" == shell.execute("suggest")
 
 
 def test_shell_load_print_and_find(tmp_path) -> None:
