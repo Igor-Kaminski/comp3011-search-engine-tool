@@ -131,6 +131,8 @@ class SearchShell:
                 f"{term}={frequency}" for term, frequency in result.term_frequencies.items()
             )
             lines.append(f"- {result.url} | tf-idf={result.score:.4f} | {frequencies}")
+            if result.snippet:
+                lines.append(f"  snippet: {result.snippet}")
         return "\n".join(lines)
 
     def _suggest(self, argument: str) -> str:

@@ -28,6 +28,7 @@ def test_build_inverted_index_stores_frequency_and_positions() -> None:
     assert index_data["metadata"]["total_terms"] == 6
     assert index_data["metadata"]["unique_terms"] == 4
     assert index_data["pages"]["https://example.test/1"]["term_count"] == 3
+    assert index_data["pages"]["https://example.test/1"]["tokens"] == ["good", "good", "friends"]
     assert index_data["index"]["good"]["https://example.test/1"] == {
         "frequency": 2,
         "positions": [0, 1],

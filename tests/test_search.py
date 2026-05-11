@@ -15,8 +15,16 @@ def sample_index() -> dict:
             "unique_terms": 5,
         },
         "pages": {
-            "https://quotes.toscrape.com/": {"title": "Home", "term_count": 5},
-            "https://quotes.toscrape.com/page/2/": {"title": "Page 2", "term_count": 3},
+            "https://quotes.toscrape.com/": {
+                "title": "Home",
+                "term_count": 5,
+                "tokens": ["good", "ideas", "matter", "good", "friends"],
+            },
+            "https://quotes.toscrape.com/page/2/": {
+                "title": "Page 2",
+                "term_count": 3,
+                "tokens": ["indifference", "good", "friendship"],
+            },
         },
         "index": {
             "good": {
@@ -45,6 +53,7 @@ def test_find_returns_pages_containing_all_query_terms_ranked_by_tfidf_score() -
     assert results[0].url == "https://quotes.toscrape.com/"
     assert results[0].score == 3.4055
     assert results[0].term_frequencies == {"good": 2, "friends": 1}
+    assert results[0].snippet == "good ideas matter good friends"
 
 
 def test_tfidf_ranking_rewards_rarer_terms() -> None:

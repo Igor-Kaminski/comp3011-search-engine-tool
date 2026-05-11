@@ -34,6 +34,7 @@ def build_inverted_index(pages: Iterable[IndexablePage], source_url: str) -> dic
         page_records[page.url] = {
             "title": page.title,
             "term_count": len(tokens),
+            "tokens": tokens,
         }
         total_terms += len(tokens)
 

@@ -21,6 +21,7 @@ class SearchResult:
     title: str
     score: float
     term_frequencies: dict[str, int]
+    snippet: str
 
 
 class SearchEngine:
@@ -85,6 +86,7 @@ class SearchEngine:
                     title=str(page_info.get("title", url)),
                     score=score,
                     term_frequencies=term_frequencies,
+                    snippet=self._make_snippet(url, query_terms),
                 )
             )
 
@@ -141,6 +143,30 @@ class SearchEngine:
             inverse_document_frequency = math.log((1 + total_pages) / (1 + document_frequency)) + 1
             score += frequency * inverse_document_frequency
         return round(score, 4)
+
+    def _make_snippet(self, url: str, terms: list[str], context_words: int = 6) -> str:
+        page_info = self.index_data["pages"].get(url, {})
+        tokens = page_info.get("tokens", [])
+        if not tokens:
+            return ""
+
+        positions: list[int] = []
+        for term in terms:
+            posting = self.index_data["index"].get(term, {}).get(url)
+            if posting:
+                positions.extend(int(position) for position in posting["positions"])
+        if not positions:
+            return " ".join(tokens[: context_words * 2])
+
+        first_match = min(positions)
+        start = max(0, first_match - context_words)
+        end = min(len(tokens), first_match + context_words + 1)
+        snippet = " ".join(tokens[start:end])
+        if start > 0:
+            snippet = "... " + snippet
+        if end < len(tokens):
+            snippet += " ..."
+        return snippet
 
     def _require_index(self) -> None:
         if self.index_data is None:
