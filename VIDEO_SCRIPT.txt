@@ -8,6 +8,8 @@ Before recording:
 - Open a terminal in the project folder.
 - Open VS Code or your editor on the other side.
 - Keep the GitHub repo page ready if you want to show it.
+- Do not delete data/index.json.
+- The build command regenerates/overwrites it.
 
 ============================================================
 0:00 - 0:20 INTRO
@@ -32,23 +34,31 @@ python -m src.main
 SAY:
 The four required commands are build, load, print, and find.
 
+data/index.json is already included for submission.
+I will still run build to prove the crawler can regenerate it.
+
 RUN:
 build
 
 SAY:
-Build crawls the quote pages, extracts visible text with
-Beautiful Soup, builds the inverted index, and saves it to
-data/index.json.
+Build is now crawling the quote pages.
+
+If it pauses, that is intentional.
 
 The crawler follows the pagination pages and respects the
 politeness window by waiting 6 seconds between successive
 requests to the website.
 
+When it finishes, the output should say it built an index
+for 10 pages and saved it to data/index.json.
+
+That shows the saved index file can be regenerated.
+
 RUN:
 load
 
 SAY:
-Load reads the saved JSON index from disk.
+Load reads that saved JSON index from disk.
 
 RUN:
 print nonsense
@@ -56,6 +66,9 @@ print nonsense
 SAY:
 Print shows the inverted index for one word.
 It shows the pages, frequency, and word positions.
+
+This is evidence that the index stores word statistics,
+not just a list of pages.
 
 RUN:
 find indifference
@@ -70,6 +83,7 @@ SAY:
 This is a multi-word query.
 It returns pages containing both words.
 The results are ranked using TF-IDF.
+The snippet line gives short context from the matching page.
 
 RUN:
 find "good friends"
@@ -92,6 +106,8 @@ stats
 SAY:
 Stats shows index information such as page count,
 total terms, unique terms, and common terms.
+
+This is a quick way to inspect the built index.
 
 RUN:
 find
