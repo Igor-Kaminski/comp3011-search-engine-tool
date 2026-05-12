@@ -1,0 +1,84 @@
+COMP3011 Coursework 2 Video Script
+
+Target length: around 4 minutes 30 seconds to 4 minutes 55 seconds.
+The video does not need to be exactly 5 minutes. The brief says maximum 5 minutes, so do not go over 5 minutes.
+
+Hi, this is my COMP3011 Coursework 2 search engine tool. The project is a small search engine for quotes.toscrape.com. It crawls the quote listing pages, builds an inverted index, saves it to disk, and lets the user search it through a command-line interface.
+
+I will start the shell with:
+
+python -m src.main
+
+The four required commands are build, load, print, and find.
+
+First I will run build. This crawls the quote pages, extracts visible text using Beautiful Soup, builds the inverted index, and saves it to data/index.json. The crawler follows the pagination pages and observes the politeness window by waiting 6 seconds between successive requests to the website.
+
+Next I will run load. This loads the saved index from disk.
+
+Now I will run:
+
+print nonsense
+
+This prints the inverted index for one word. It shows which pages contain the word, the frequency on each page, and the word positions.
+
+Now I will run:
+
+find indifference
+
+This searches for one word. Then:
+
+find good friends
+
+This is a multi-word query. It returns pages that contain both words. The results are ranked using TF-IDF, so pages with stronger term relevance are shown first.
+
+I also added extra features beyond the minimum requirements. This command searches for an exact phrase:
+
+find "good friends"
+
+It uses the stored word positions to check that the words appear next to each other in order.
+
+This command:
+
+suggest indiference
+
+suggests likely indexed words for misspellings or partial words.
+
+And:
+
+stats
+
+shows index statistics such as page count, total terms, unique terms, and common terms.
+
+For edge cases, an empty query such as find returns a usage message. A missing word such as find qwertywordnotfound returns no results instead of crashing.
+
+Now I will explain the code structure.
+
+The project is modular. crawler.py handles HTTP requests, HTML parsing, pagination, the 6-second delay, and request errors. It uses Requests and Beautiful Soup.
+
+indexer.py handles tokenisation and index construction. It uses a regular expression to extract words and lowercases them, so the search is case-insensitive. That means Good, GOOD, and good are treated as the same word.
+
+The main data structure is:
+
+word -> page URL -> frequency and positions
+
+This is an inverted index. It is useful because search can look up the posting lists for query words instead of scanning every page every time.
+
+search.py handles loading, saving, validation, searching, TF-IDF ranking, phrase search, snippets, and suggestions. Multi-word search works by intersecting the posting lists for the query terms. Phrase search uses the saved positions. TF-IDF combines term frequency with inverse document frequency, so rarer terms have more influence on the score.
+
+main.py provides the command-line shell and user-facing output.
+
+For testing, I will run:
+
+python -m pytest --cov=src --cov-report=term-missing
+
+The project has unit tests for the crawler, indexer, search logic, and command shell. It also has integration tests for the full index-save-load-search workflow and a performance test using synthetic pages. The crawler tests use fake HTTP sessions, so they do not contact the live website or wait 6 seconds. The current result is 28 tests passing with 90 percent coverage.
+
+There is also a GitHub Actions workflow that runs the tests automatically on GitHub.
+
+For version control, the Git history shows meaningful stages: core crawler and indexer, CLI, tests, advanced search features, documentation, benchmarking, snippets, and final index updates. I also added a v1.0.0 release tag.
+
+Finally, I used OpenAI Codex during development, and I am declaring that use. Codex helped interpret the brief, scaffold the project, write code, improve tests, and draft documentation. It was useful for generating ideas and test cases, but I still had to verify the code myself.
+
+For example, I checked that the saved index matched a fresh crawl and repeatedly ran the test suite. One issue was that generated Python cache files were included early, so I fixed that with a .gitignore and cleaned the repository. This showed me that AI-generated work still needs review, testing, and understanding.
+
+Overall, the project meets the required build, load, print, and find commands, and adds TF-IDF ranking, phrase search, query suggestions, snippets, statistics, validation, automated testing, and benchmarking. Thank you.
