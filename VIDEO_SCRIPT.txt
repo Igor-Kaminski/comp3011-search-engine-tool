@@ -97,13 +97,22 @@ RUN:
 suggest indiference
 
 SAY:
-Suggest gives likely indexed terms for misspellings
+I also added this extra command: suggest.
+
+It is not one of the required four commands.
+It demonstrates query suggestions.
+
+It gives likely indexed terms for misspellings
 or partial words.
 
 RUN:
 stats
 
 SAY:
+I also added this extra command: stats.
+
+It is another feature beyond the minimum brief.
+
 Stats shows index information such as page count,
 total terms, unique terms, and common terms.
 
@@ -223,7 +232,8 @@ execute() chooses which command to run.
 _build(), _load(), _print(), and _find() are the four required
 coursework commands.
 
-_suggest() and _stats() are extra commands for advanced features.
+_suggest() and _stats() are extra commands I added for
+advanced features beyond the minimum requirements.
 
 ============================================================
 3:20 - 3:55 TESTING
@@ -288,8 +298,9 @@ testing, and understanding.
 Overall, the project meets the required build, load, print,
 and find commands.
 
-It also adds TF-IDF ranking, phrase search, query suggestions,
-snippets, statistics, validation, automated testing,
+I also added extra features beyond the brief:
+TF-IDF ranking, phrase search, query suggestions,
+snippets, index statistics, validation, automated testing,
 and benchmarking.
 
 Thank you.
