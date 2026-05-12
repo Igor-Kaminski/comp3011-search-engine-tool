@@ -7,8 +7,10 @@ GitHub repository URL:
 https://github.com/Igor-Kaminski/comp3011-search-engine-tool
 
 Index file:
-The compiled index file is included in this repository at data/index.json.
-If Minerva asks for the index file separately, attach:
+The compiled index file is included in the GitHub repository at:
+data/index.json
+
+If Minerva asks for the index file separately, attach this local file:
 C:\Users\zherk\Desktop\Web Services Web Scraper\data\index.json
 
 GenAI declaration:
