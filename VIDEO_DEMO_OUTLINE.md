@@ -101,10 +101,10 @@ Mention the development sequence:
 
 ## 4:30-5:00 GenAI Critical Evaluation
 
-Suggested points to adapt into your own words:
+Suggested reflection points:
 
 - Codex helped interpret the brief, create the project structure, implement the first version, and write tests.
 - The AI-assisted workflow still needed verification: `compileall` accidentally produced `__pycache__` files that were committed at first, then fixed with `.gitignore` and a cleanup commit.
 - The tests were especially useful because they check the crawler logic without making slow real website requests.
 - You learned that the inverted index maps each word to page-level statistics, and that multi-word search can be implemented by intersecting the posting lists for each query term.
-- You should declare Codex/OpenAI use clearly because the brief says non-declared GenAI use is academic misconduct.
+- Codex/OpenAI use is declared clearly because the brief says non-declared GenAI use is academic misconduct.

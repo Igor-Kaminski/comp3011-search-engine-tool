@@ -52,7 +52,7 @@ python -m venv .venv
 python -m pip install -r requirements.txt
 ```
 
-You can also install the requirements into your current Python environment:
+Alternatively, install the requirements into the current Python environment:
 
 ```powershell
 python -m pip install -r requirements.txt
@@ -209,7 +209,7 @@ TF-IDF was added as an advanced feature because it improves ranking quality whil
 
 ## GenAI Use Declaration
 
-This implementation was developed with help from OpenAI Codex. The AI was used to interpret the coursework brief, scaffold the project structure, implement the crawler/index/search modules, write tests, and draft documentation. You should declare this in the video demonstration and be ready to explain the design decisions and code in your own words.
+This implementation was developed with help from OpenAI Codex. The AI was used to interpret the coursework brief, scaffold the project structure, implement the crawler/index/search modules, write tests, and draft documentation. GenAI use is declared in the video demonstration and submission document.
 
 ## Continuous Integration
 
