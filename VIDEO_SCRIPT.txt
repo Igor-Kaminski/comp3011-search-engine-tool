@@ -111,27 +111,43 @@ A missing word returns no results instead of crashing.
 
 SHOW:
 src/crawler.py
+Scroll to:
+- class QuoteCrawler
+- crawl()
+- _fetch()
+- _find_next_page_url()
 
 SAY:
 The project is modular.
 
-crawler.py handles HTTP requests, HTML parsing, pagination,
-the 6-second delay, and request errors.
+QuoteCrawler is the crawler class.
+
+crawl() controls the crawl loop and follows pagination.
+
+_fetch() sends the HTTP request and applies the 6-second
+politeness delay after the first request.
+
+_find_next_page_url() finds the next page link using several
+HTML patterns.
 
 It uses Requests for HTTP and Beautiful Soup for parsing.
 
 SHOW:
 src/indexer.py
+Scroll to:
+- tokenize()
+- build_inverted_index()
 
 SAY:
-indexer.py handles tokenisation and index construction.
+tokenize() extracts words with a regular expression and
+lowercases them.
 
-It uses a regular expression to extract words and lowercases
-them, so search is case-insensitive.
+That makes search case-insensitive.
 
 That means Good, GOOD, and good are treated as the same word.
 
-SAY:
+build_inverted_index() creates the main inverted index.
+
 The main data structure is:
 
 word -> page URL -> frequency and positions
@@ -141,23 +157,57 @@ It avoids scanning every page for every search.
 
 SHOW:
 src/search.py
+Scroll to:
+- class SearchEngine
+- load()
+- validate()
+- find()
+- suggest()
+- _contains_phrase()
+- _tf_idf_score()
+- _make_snippet()
 
 SAY:
-search.py handles loading, saving, validation, searching,
-TF-IDF ranking, phrase search, snippets, and suggestions.
+SearchEngine contains the main search behaviour.
+
+load() reads the saved index from disk.
+
+validate() checks that the index structure is sensible.
+
+find() handles normal search and multi-word queries.
 
 Multi-word search intersects posting lists for the query terms.
 
-Phrase search uses saved word positions.
+_contains_phrase() checks exact phrase matches using positions.
 
-TF-IDF combines term frequency with inverse document frequency,
-so rarer terms have more influence on the score.
+_tf_idf_score() ranks results using term frequency and inverse
+document frequency.
+
+_make_snippet() builds short result snippets from indexed tokens.
+
+suggest() handles prefix and spelling suggestions.
 
 SHOW:
 src/main.py
+Scroll to:
+- class SearchShell
+- execute()
+- _build()
+- _load()
+- _print()
+- _find()
+- _suggest()
+- _stats()
 
 SAY:
-main.py provides the command-line shell and user-facing output.
+SearchShell provides the command-line interface.
+
+execute() chooses which command to run.
+
+_build(), _load(), _print(), and _find() are the four required
+coursework commands.
+
+_suggest() and _stats() are extra commands for advanced features.
 
 ============================================================
 3:20 - 3:55 TESTING
