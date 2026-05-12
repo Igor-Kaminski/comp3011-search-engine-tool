@@ -3,159 +3,118 @@ COMP3011 Coursework 2 Video Script
 Target time: 4:30 to 4:55.
 Do not go over 5:00.
 
-Before recording:
-- Open this file on one side of the screen.
-- Open a terminal in the project folder.
-- Open VS Code or your editor on the other side.
-- Keep the GitHub repo page ready if you want to show it.
-- Do not delete data/index.json.
-- The build command regenerates/overwrites it.
+Main rule:
+- Show the commands.
+- Keep the code walkthrough very short.
+- Only show suggest/stats if you have spare time.
 
 ============================================================
-0:00 - 0:20 INTRO
+0:00 - 0:15 INTRO
 ============================================================
 
 SAY:
-Hi, this is my COMP3011 Coursework 2 search engine tool.
+This is my COMP3011 Coursework 2 search engine tool.
 
-It is a small search engine for quotes.toscrape.com.
-
-It crawls quote listing pages, builds an inverted index,
-saves it to disk, and lets the user search it from a
-command-line interface.
+It crawls quotes.toscrape.com, builds an inverted index,
+saves it to disk, and lets the user search from the command
+line.
 
 ============================================================
-0:20 - 2:00 LIVE DEMO
+0:15 - 2:20 LIVE DEMO
 ============================================================
 
 RUN:
 python -m src.main
 
 SAY:
-The four required commands are build, load, print, and find.
-
-data/index.json is already included for submission.
-I will still run build to prove the crawler can regenerate it.
+The required commands are build, load, print, and find.
 
 RUN:
 build
 
-SAY:
-Build is now crawling the quote pages.
+SAY WHILE BUILD RUNS:
+Build regenerates data/index.json.
 
-If it pauses, that is intentional.
+The pauses are intentional.
+The crawler waits 6 seconds between website requests to
+respect the politeness window.
 
-The crawler follows the pagination pages and respects the
-politeness window by waiting 6 seconds between successive
-requests to the website.
-
-When it finishes, the output should say it built an index
-for 10 pages and saved it to data/index.json.
-
-That shows the saved index file can be regenerated.
+When it finishes, it should show 10 crawled pages.
 
 RUN:
 load
 
 SAY:
-Load reads that saved JSON index from disk.
+Load reads the saved index.
 
 RUN:
 print nonsense
 
 SAY:
-Print shows the inverted index for one word.
-It shows the pages, frequency, and word positions.
-
-This is evidence that the index stores word statistics,
-not just a list of pages.
+Print shows the inverted index for one word:
+pages, frequency, and positions.
 
 RUN:
 find indifference
 
 SAY:
-This is a single-word search.
+This is single-word search.
 
 RUN:
 find good friends
 
 SAY:
-This is a multi-word query.
-It returns pages containing both words.
-The results are ranked using TF-IDF.
-The snippet line gives short context from the matching page.
+This is multi-word search.
+It returns pages containing both words and ranks them
+with TF-IDF.
 
 RUN:
 find "good friends"
 
 SAY:
-This is an exact phrase search.
-It uses stored word positions to check that the words
-appear next to each other in order.
+This is an extra phrase-search feature.
+It uses word positions to check the exact phrase.
 
+OPTIONAL IF TIME:
 RUN:
 suggest indiference
 
 SAY:
-I also added this extra command: suggest.
+This is an extra suggestion command for misspellings.
 
-It is not one of the required four commands.
-It demonstrates query suggestions.
-
-It gives likely indexed terms for misspellings
-or partial words.
-
+OPTIONAL IF TIME:
 RUN:
 stats
 
 SAY:
-I also added this extra command: stats.
-
-It is another feature beyond the minimum brief.
-
-Stats shows index information such as page count,
-total terms, unique terms, and common terms.
-
-This is a quick way to inspect the built index.
+This is an extra command showing index statistics.
 
 RUN:
 find
 
 SAY:
-An empty query gives a usage message.
+Empty queries are handled with a usage message.
 
 RUN:
 find qwertywordnotfound
 
 SAY:
-A missing word returns no results instead of crashing.
+Missing words return no results instead of crashing.
 
 ============================================================
-2:00 - 3:20 CODE WALKTHROUGH
+2:20 - 3:05 SHORT CODE WALKTHROUGH
 ============================================================
 
 SHOW:
 src/crawler.py
 Scroll to:
-- class QuoteCrawler
 - crawl()
 - _fetch()
-- _find_next_page_url()
 
 SAY:
-The project is modular.
+In crawler.py, crawl() follows pagination.
 
-QuoteCrawler is the crawler class.
-
-crawl() controls the crawl loop and follows pagination.
-
-_fetch() sends the HTTP request and applies the 6-second
-politeness delay after the first request.
-
-_find_next_page_url() finds the next page link using several
-HTML patterns.
-
-It uses Requests for HTTP and Beautiful Soup for parsing.
+_fetch() sends requests and applies the 6-second delay.
 
 SHOW:
 src/indexer.py
@@ -164,159 +123,107 @@ Scroll to:
 - build_inverted_index()
 
 SAY:
-tokenize() extracts words with a regular expression and
-lowercases them.
+tokenize() lowercases words, so search is case-insensitive.
 
-That makes search case-insensitive.
-
-That means Good, GOOD, and good are treated as the same word.
-
-build_inverted_index() creates the main inverted index.
-
-The main data structure is:
+build_inverted_index() creates:
 
 word -> page URL -> frequency and positions
-
-This is an inverted index.
-It avoids scanning every page for every search.
 
 SHOW:
 src/search.py
 Scroll to:
-- class SearchEngine
-- load()
-- validate()
 - find()
-- suggest()
-- _contains_phrase()
 - _tf_idf_score()
-- _make_snippet()
+- _contains_phrase()
 
 SAY:
-SearchEngine contains the main search behaviour.
+find() does the search by intersecting posting lists.
 
-load() reads the saved index from disk.
+_tf_idf_score() ranks results.
 
-validate() checks that the index structure is sensible.
-
-find() handles normal search and multi-word queries.
-
-Multi-word search intersects posting lists for the query terms.
-
-_contains_phrase() checks exact phrase matches using positions.
-
-_tf_idf_score() ranks results using term frequency and inverse
-document frequency.
-
-_make_snippet() builds short result snippets from indexed tokens.
-
-suggest() handles prefix and spelling suggestions.
+_contains_phrase() uses positions for exact phrase search.
 
 SHOW:
 src/main.py
 Scroll to:
-- class SearchShell
 - execute()
-- _build()
-- _load()
-- _print()
-- _find()
-- _suggest()
-- _stats()
 
 SAY:
-SearchShell provides the command-line interface.
-
-execute() chooses which command to run.
-
-_build(), _load(), _print(), and _find() are the four required
-coursework commands.
-
-_suggest() and _stats() are extra commands I added for
-advanced features beyond the minimum requirements.
+main.py connects the shell commands to the implementation.
 
 ============================================================
-3:20 - 3:55 TESTING
+3:05 - 3:35 TESTING
 ============================================================
 
 RUN:
 python -m pytest --cov=src --cov-report=term-missing
 
 SAY:
-The project has unit tests for the crawler, indexer,
-search logic, and command shell.
+The tests cover the crawler, indexer, search logic, CLI,
+integration workflow, and performance.
 
-It also has integration tests for the full
-index-save-load-search workflow.
+Crawler tests use fake HTTP sessions, so tests do not hit
+the live website or wait 6 seconds.
 
-There is also a performance test using synthetic pages.
-
-The crawler tests use fake HTTP sessions, so they do not
-contact the live website or wait 6 seconds.
-
-The current result is 28 tests passing with 90 percent coverage.
+The result is 28 tests passing with 90 percent coverage.
 
 ============================================================
-3:55 - 4:15 VERSION CONTROL
+3:35 - 3:55 VERSION CONTROL
 ============================================================
 
 RUN:
-git log --oneline --decorate --max-count=10
+git log --oneline --decorate --max-count=8
 
 SAY:
-The Git history shows meaningful development stages:
-core crawler and indexer, CLI, tests, advanced search,
-documentation, benchmarking, snippets, and final index updates.
-
-I also added a v1.0.0 release tag and a GitHub Actions
-workflow that runs the tests automatically.
+The Git history shows development in stages:
+core implementation, CLI, tests, advanced search,
+documentation, benchmarking, snippets, and final updates.
 
 ============================================================
-4:15 - 4:55 GENAI REFLECTION
+3:55 - 4:45 GENAI REFLECTION
 ============================================================
 
 SAY:
-I used OpenAI Codex during development, and I am declaring
-that use.
+I used OpenAI Codex and I am declaring that use.
 
 Codex helped interpret the brief, scaffold the project,
 write code, improve tests, and draft documentation.
 
-It was useful for generating ideas and test cases.
+It helped most with project structure and test ideas.
 
 However, I still had to verify the code myself.
 
 For example, I checked that the saved index matched a fresh
-crawl, and I repeatedly ran the test suite.
+crawl and repeatedly ran the test suite.
 
-One issue was that generated Python cache files were included
-early, so I fixed that with a .gitignore and cleaned the repo.
+One problem was that Python cache files were included early,
+so I fixed that with .gitignore and cleaned the repo.
 
 This showed me that AI-generated work still needs review,
 testing, and understanding.
 
-Overall, the project meets the required build, load, print,
-and find commands.
+Overall, the project meets build, load, print, and find.
 
-I also added extra features beyond the brief:
-TF-IDF ranking, phrase search, query suggestions,
-snippets, index statistics, validation, automated testing,
+It also adds TF-IDF ranking, phrase search, suggestions,
+snippets, statistics, validation, automated tests,
 and benchmarking.
 
 Thank you.
 
 ============================================================
-IF RUNNING OUT OF TIME
+IF STILL TOO LONG
 ============================================================
 
-Skip these lines first:
-- The v1.0.0 release tag sentence.
-- The performance test sentence.
-- The benchmark/statistics detail.
+Skip:
+- suggest
+- stats
+- the phrase search command
+- one or two Git sentences
 
 Do not skip:
-- Required command demo.
-- Inverted index explanation.
-- Testing result.
-- Git history.
-- GenAI declaration.
+- build
+- load
+- print
+- find
+- tests
+- GenAI declaration
